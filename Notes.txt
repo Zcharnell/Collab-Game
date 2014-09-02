@@ -1,0 +1,33 @@
+Current:
+
+-Mountains
+-River
+-Lake
+-Castle
+-Hut
+-Grass
+
+
+
+To-Do:
+
+-Have tile art be dependent on nearby tiles. A lake tile surrounded by lake tiles should look like deep water; a lake tile with a grass tile on a side should have a shore on that side, while a lake tile with a river on a side should look like the river is running into the lake, and a castle on a side should look like the water is crashing against the side of the castle. Do this for all types of tiles.
+
+-Make the world isometric (make width greater than height)
+	--diagonal isometric could work but would require a more complicated tile selection algorithm due to all lines being diagonal
+
+-Find a better heuristic algorithm, and maybe better A* algorithm in general
+
+-In Unity, make everything a normal 2D then set the camera to give that isometric perspective. This would make coding it a lot easier while keeping the same ideal fake-3D perspective. Or it should, at least.
+
+
+Current:
+--Make a second unit that can also gather and build, while communicating with the other unit
+--make workers return resources if there is only one resource on screen and another worker is going for it
+
+
+
+Kinda Finished:
+--Figure out how to cache pathfinding, or not pathfind if the end tile is still the same
+
+
