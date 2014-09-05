@@ -21,6 +21,7 @@ function Unit(tileIn){
 	this.animateFrame = 0;
 	this.direction = 0;  // 0 = left, 1 = right
 	this.objHeld = [];
+	this.objHeldMax = 2;
 	this.name;
 	this.currentAction;
 	this.currentActionDelay = 0;
@@ -28,8 +29,9 @@ function Unit(tileIn){
 	this.yspeed = 6;
 }
 
+//Sets the current sprite to use for the unit, based on direction and animation time
 Unit.prototype.animate = function(){
-	this.animateFrame = (this.animateFrame + 1) % 20;
+	this.animateFrame = (this.animateFrame + 1) % 15;
 	// console.log(this.animateFrame);
 	if(this.animateFrame === 0){
 		if(this.currentSprite === unit1){
@@ -47,6 +49,7 @@ Unit.prototype.animate = function(){
 	}
 }
 
+//Changes the sprite for the unit based on a change in direction
 Unit.prototype.changeDirection = function(dirIn){
 	this.direction = dirIn;
 	if(this.direction === 0 && (this.currentSprite === unit3 || this.currentSprite === unit4)){
@@ -67,8 +70,9 @@ Unit.prototype.changeDirection = function(dirIn){
 	}
 }
 
+//Makes the unit wander if there is nothing else to do
 Unit.prototype.wander = function(){
-	if(this.currentAction === 'wander' && this.currentActionDelay < 30){
+	if(this.currentAction === 'wander' && this.currentActionDelay < 10){
 		this.currentActionDelay += 1;
 	}
 	else{
@@ -76,7 +80,7 @@ Unit.prototype.wander = function(){
 		this.yspeed = 2;
 		this.currentAction = 'wander';
 		this.currentActionDelay = 0;
-		console.log(this.name + ' is WANDERing!');
+		printSideConsole(this.name + ' is WANDERing!');
 		var ranTile = squareTiles[Math.floor(Math.random()*squareTiles.length)];
 		while(ranTile.impassable || Math.abs(this.currentTile.row - ranTile.row) > 3 || Math.abs(this.currentTile.column - ranTile.column) > 3){
 			ranTile = squareTiles[Math.floor(Math.random()*squareTiles.length)];
@@ -86,27 +90,50 @@ Unit.prototype.wander = function(){
 	}
 }
 
+//Updates the unit's current action, which determines what it is doing and other variables
 Unit.prototype.updateAction = function(setAction){
 	switch(setAction){
 		case 'wander':
-			// this.wander();
+			this.wander();
 			break;
 		case 'gather wood':
 			//function for gathering wood should be called from here, will have to update that
 			this.xspeed = 6;
 			this.yspeed = 6;
 			this.currentAction = 'gather wood';
+			printSideConsole(this.name + ' is GATHER WOOD');
+			//action
+			var closestWood = CivMind.getClosestWood(this);
+			if(this.currentTile != closestWood){
+				var path = pathFind(this.currentTile,closestWood,this);
+				moveOnPath(this,path);
+			}
+			else{
+				pickUpObject(this,this.currentTile.objOcc[0]);
+			}
 			break;
 		case 'deposit wood':
 			this.xspeed = 6;
 			this.yspeed = 6;
 			this.currentAction = 'deposit wood';
+			printSideConsole(this.name + ' is DEPOSIT WOOD');
+			//action
+			if(this.currentTile != CivMind.resourceDropOff){
+				var path = pathFind(this.currentTile,CivMind.resourceDropOff,this);
+				moveOnPath(this,path);
+			}
+			else{
+				dropObject(this,this.objHeld);	
+			}
 			break;
 		case 'build':
 			this.xspeed = 6;
 			this.yspeed = 6;
 			this.currentAction = 'build';
+			printSideConsole(this.name + ' is BUILD');
+			// console.log(this.name + ' is BUILD');
 			CivMind.workerBuilders += 1;
+			//action
 			if(this.currentTile != curBuildingSpot){
 				var path = pathFind(this.currentTile,curBuildingSpot,this);
 				moveOnPath(this,path);
@@ -114,6 +141,42 @@ Unit.prototype.updateAction = function(setAction){
 			else{
 				CivMind.buildStructure(curBuildingSpot);
 			}
+			break;
+	}
+}
+
+//Sets the variables referring to the unit's x position
+Unit.prototype.setX = function(plusorminus,amount,xLeft){
+	switch(plusorminus){
+		case '+':
+			this.xpos += amount;
+			this.xLeft += amount;
+			break;
+		case '-':
+			this.xpos -= amount;
+			this.xLeft -= amount;
+			break;
+		case '=':
+			this.xpos = amount;
+			this.xLeft = xLeft;
+			break;
+	}
+}
+
+//Sets the variables referring to the unit's y position
+Unit.prototype.setY = function(plusorminus,amount,yTop){
+	switch(plusorminus){
+		case '+':
+			this.ypos += amount;
+			this.yTop += amount;
+			break;
+		case '-':
+			this.ypos -= amount;
+			this.yTop -= amount;
+			break;
+		case '=':
+			this.ypos = amount;
+			this.yTop = yTop;
 			break;
 	}
 }
@@ -136,7 +199,7 @@ function Wood(tileIn){
 
 
 
-
+//Object for controlling a single civilization of units, like a hivemind
 function CivMind(){
 	this.woodGathered = 0;
 	this.woodForBuild = 5;
@@ -144,6 +207,7 @@ function CivMind(){
 	this.resourceDropOff = squareTiles[20];
 	this.woodGatArray = [];
 	this.workerArray = [];
+	this.unitUpdateOrder = [];
 	this.workerEndPathArray = [];
 	this.workerSpeed = 6;
 	this.workerBuilders = 0;
@@ -153,6 +217,7 @@ CivMind.prototype.addWorkerToArray = function(workerIn){
 	this.workerArray.push(workerIn);
 }
 
+//Finds the wood closest to the unit and returns its position
 CivMind.prototype.getClosestWood = function(unitIn){
 	var u = unitIn;
 	var tileArray = this.woodPosArray;
@@ -173,6 +238,7 @@ CivMind.prototype.getClosestWood = function(unitIn){
 	return curClosestTile;
 }
 
+//Builds a structure in the location and removes the resources from storage.
 CivMind.prototype.buildStructure = function(tileIn){
 	var struct = new Structure(tileIn);
 	tileIn.hasStructure = true;
@@ -181,6 +247,7 @@ CivMind.prototype.buildStructure = function(tileIn){
 	// CivMind.woodGatArray.splice(0,6);
 }
 
+//Sets the speed of workers
 CivMind.prototype.setWorkerSpeed = function(speedIn){
 	for(var i in this.workerArray){
 		this.workerArray[i].xspeed = speedIn;
@@ -188,13 +255,15 @@ CivMind.prototype.setWorkerSpeed = function(speedIn){
 	}
 }
 
+//Update function, checks for if any units are currently building
 CivMind.prototype.update = function(){
-	CivMind.workerBuilders = 0;
-	for(var i in unitArray){
-		if(unitArray[i].currentAction === 'build'){
-			CivMind.workerBuilders += 1;
-		}
-	}
+	this.workerBuilders = 0;
+	this.unitUpdateOrder = [];
+	// for(var i in unitArray){
+	// 	if(unitArray[i].currentAction === 'build'){
+	// 		CivMind.workerBuilders += 1;
+	// 	}
+	// }
 }
 
 
@@ -222,23 +291,23 @@ function squareTile(columnIn,rowIn,tileNumIn){
 	this.row = rowIn;
 	this.height = 30;
 	this.width = 30;
-	this.xLeft = this.height*this.column;
-	this.yTop = this.width*this.row;
-	this.xpos = this.xLeft + (this.width/2);
-	this.ypos = this.yTop + (this.height/2);
+	this.xLeft = this.height*this.column;	//topleft side of the tile (where it draws on the canvas)
+	this.yTop = this.width*this.row;		//topleft side of the tile (where it draws on the canvas)
+	this.xpos = this.xLeft + (this.width/2);	//middle of the tile
+	this.ypos = this.yTop + (this.height/2);	//middle of the tile
 	this.terrainVariable = 'Grass';	//grass, mountain, river, lake, castle
 	this.terrainVariableTile; //determines which tile display should be used; 1, 2, 3, 4, etc
-	this.hutStartTried = false;
 	this.impassable = false;
-	this.parentTile;
-	this.astarF;
-	this.astarG;
-	this.astarH;
-	this.adjTiles = [];
-	this.objOcc = [];
+	this.parentTile;	//pathfinding
+	this.astarF;	//pathfinding
+	this.astarG;	//pathfinding
+	this.astarH;	//pathfinding
+	this.adjTiles = [];	//pathfinding
+	this.objOcc = [];	//checks if this tile has an object on it
 	this.hasStructure = false;
 }
 
+//Sets the variable type of the tile, which determines what image is drawn on it and whether it is impassable
 squareTile.prototype.setVar = function(varTypeIn){
 	this.terrainVariable = varTypeIn;
 	if(this.terrainVariable === 'Mountain'){
@@ -249,6 +318,7 @@ squareTile.prototype.setVar = function(varTypeIn){
 	}
 }
 
+//Sets the tiles adjacent to the tile
 squareTile.prototype.setAdjacentTiles = function(){
 	var cRow,cCol,tiles;
 	cRow = this.row;

@@ -22,12 +22,18 @@ To-Do:
 
 
 Current:
---Make a second unit that can also gather and build, while communicating with the other unit
---make workers return resources if there is only one resource on screen and another worker is going for it
-
+--add in a time that the unit stays to collect a resource
+--add in combat against hostile creeps
+--make a second race that functions independently
+--make the races interact (fight mainly)
 
 
 Kinda Finished:
 --Figure out how to cache pathfinding, or not pathfind if the end tile is still the same
+
+
+Completed:
+9/1/14--Make a second unit that can also gather and build, while communicating with the other unit
+9/1/14--make workers return resources if there is only one resource on screen and another worker is going for it
 
 

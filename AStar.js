@@ -112,25 +112,27 @@ function moveOnPath(unit,pathIn){
 		if(unit.path.length > 0){
 		//Smooth Movement
 			if(unit.path[0].xpos != unit.xpos){
-				if(unit.path[0].xpos > unit.xpos){
-					unit.xpos += unit.xspeed;
-					unit.xLeft += unit.xspeed;
+				if(Math.abs(unit.path[0].xpos-unit.xpos) < unit.xspeed){
+					unit.setX('=',unit.path[0].xpos,unit.path[0].xLeft);
+				}
+				else if(unit.path[0].xpos > unit.xpos){
+					unit.setX('+',unit.xspeed);
 					unit.changeDirection(1);
 				}
 				else if(unit.path[0].xpos < unit.xpos){
-					unit.xpos -= unit.xspeed;
-					unit.xLeft -= unit.xspeed;
+					unit.setX('-',unit.xspeed);
 					unit.changeDirection(0);
 				}
 			}
 			if(unit.path[0].ypos != unit.ypos){
+				if(Math.abs(unit.path[0].ypos-unit.ypos) < unit.yspeed){
+					unit.setY('=',unit.path[0].ypos,unit.path[0].yTop);
+				}
 				if(unit.path[0].ypos > unit.ypos){
-					unit.ypos += unit.yspeed;
-					unit.yTop += unit.yspeed;
+					unit.setY('+',unit.yspeed);
 				}
 				else{
-					unit.ypos -= unit.yspeed;
-					unit.yTop -= unit.yspeed;
+					unit.setY('-',unit.yspeed);
 				}
 			}
 			if(unit.path[0].xpos === unit.xpos && unit.path[0].ypos === unit.ypos){

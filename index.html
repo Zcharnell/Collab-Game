@@ -8,10 +8,10 @@
 	<!-- <link rel="stylesheet" href="bootstrap-3.2.0-dist/css/bootstrap.css"> -->
 	<!-- <link rel="stylesheet" href="jquery/jquery-ui-1.11.0.custom/jquery-ui.css"> -->
 	<link rel="stylesheet" href="stylesheet.css">
-	<!-- <link rel="shortcut icon" href="VirtArenaImages/favicon.ico" type="image/x-icon" /> -->
 	<script type='text/javascript' src='script.js'></script>
 	<script type='text/javascript' src='classes.js'></script>
 	<script type='text/javascript' src='AStar.js'></script>
+	<script type='text/javascript' src='ScriptingFunctions.js'></script>
 
 	<title>AI Game</title>
 </head>
@@ -19,11 +19,7 @@
 <body>
 	<img id="Square" class="displayOff" src="assets/Square.png">
 	<img id="SquareGrass" class="displayOff" src="assets/SquareGrass.png">
-	<img id="SquareLake" class="displayOff" src="assets/SquareLake.png">
-	<img id="SquareCastle" class="displayOff" src="assets/SquareCastle.png">
-	<img id="SquareRiver" class="displayOff" src="assets/SquareRiver.png">
 	<img id="SquareMountain" class="displayOff" src="assets/SquareMountain.png">
-	<img id="SquareHut" class="displayOff" src="assets/SquareHut.png">
 	<img id="HoverTile" class="displayOff" src="assets/HoverTile.png">
 	<img id="Baddie1" class="displayOff" src="assets/Baddie1.png">
 	<img id="Baddie2" class="displayOff" src="assets/Baddie2.png">
@@ -34,7 +30,8 @@
 	<canvas id="canvas1" width="640" height="480"></canvas>
 	<div>Commmands</div>
 	<div>aiSet(): starts the AI -- spawnRandomWood(): spawns 10 wood in random spaces -- setBuildingSpotsRan(): changes spots for buildings to be placed</div>
-	<div>2) make mountain -- 3) remove mountain -- 5) spawn wood -- 6) spawn 12 wood</div>
+	<div id='buttonDesc'>Buttons</br>1) Spawn unit</br>2) Start AI</br>3) Spawn wood randomly</br>4) Change building spots</br>5) Spawn wood</br>6) Spawn 12 wood</br>7) Make mountain</br>8) Remove mountain</br>P) Pause game</div>
+	<div id='ConsoleTitle'>Console<div id='SideConsole'></div></div>
 
 
 
@@ -52,8 +49,6 @@
 		bodyWidth = $body.width();
 		bodyHeight = $body.height();
 		squareTiles = [];
-		riverStartArray = [];
-		riverArray = [];
 		mouse = new Object();
 		unitArray = [];
 		canvasOffset = $('#canvas1').offset();
@@ -68,11 +63,7 @@
 			ctx = canvas.getContext("2d");
 			squarePNG=document.getElementById("Square");
 			squareGrass=document.getElementById("SquareGrass");
-			squareLake=document.getElementById("SquareLake");
-			squareCastle=document.getElementById("SquareCastle");
-			squareRiver=document.getElementById("SquareRiver");
 			squareMountain=document.getElementById("SquareMountain");
-			squareHut=document.getElementById("SquareHut");
 			hoverTileImg=document.getElementById("HoverTile");
 			unit1=document.getElementById("Baddie1");
 			unit2=document.getElementById("Baddie2");
@@ -85,13 +76,8 @@
 			console.log(bodyWidth);
 			console.log(bodyHeight);
 
-			//gridSquareWidth = Math.floor(bodyWidth/gridNumberSquares);
-			//gridSquareHeight = Math.floor(bodyHeight/gridNumberSquares);
-			//console.log(gridSquareWidth);
-			//console.log(gridSquareHeight);
-			gridWidth = (Math.floor(Math.random()*60)+30)*16;
+			//Set start variables for grid and canvas
 			gridWidth = 480;
-			gridHeight = (Math.floor(Math.random()*60)+30)*9;
 			gridHeight = 360;
 			gridNumberSquares = [Math.floor(gridHeight/30),Math.floor(gridWidth/30)];  //16 rows, 21 columns (480/30 = 16, 640/30 ~ 21)
 			canvas.width = gridWidth;
@@ -110,73 +96,12 @@
 				ctx.drawImage(squarePNG,squareTiles[i].xLeft,squareTiles[i].yTop);
 			}
 
-			//River Initialization
-			// for(var i=0; i<squareTiles.length; i++){
-			// 	if(squareTiles[i].column === maxColumnNumber-1 || squareTiles[i].column === 1){
-			// 		if(squareTiles[i].row != 0 && squareTiles[i].row != maxRowNumber){
-			// 			riverStartArray[riverStartArray.length] = squareTiles[i];
-			// 		}
-			// 	}
-			// 	else if(squareTiles[i].row === maxRowNumber-1 || squareTiles[i].row === 1){
-			// 		if(squareTiles[i].column != 0 && squareTiles[i].column != maxColumnNumber){
-			// 			riverStartArray[riverStartArray.length] = squareTiles[i];
-			// 		}
-			// 	}
-			// }
-
-			// riverStartTile = riverStartArray[Math.floor(Math.random()*riverStartArray.length)];
-			// riverStartTile.terrainVariable = 'River';
-			// if(riverStartTile.row === 1){
-			// 	riverStartNumber = 1;
-			// }
-			// else if(riverStartTile.column === maxColumnNumber-1){
-			// 	riverStartNumber = 2;
-			// }
-			// else if(riverStartTile.row === maxRowNumber-1){
-			// 	riverStartNumber = 3;
-			// }
-			// else if(riverStartTile.column === 1){
-			// 	riverStartNumber = 4;
-			// }
-			// console.log('RiverStartTile row: ' + riverStartTile.row + ' column: ' + riverStartTile.column);
-			// console.log('RiverStartNumber = ' + riverStartNumber);
-			
 
 
-
-			// //Lake Initialization
-			// lakeStartTile = squareTiles[Math.floor(Math.random()*squareTiles.length)];
-			// while(lakeStartTile.column === maxColumnNumber || lakeStartTile.column === 0 || lakeStartTile.row === maxRowNumber || lakeStartTile.row === 0){
-			// 	lakeStartTile = squareTiles[Math.floor(Math.random()*squareTiles.length)]
-			// 	console.log('Re-random LakeStartTile');
-			// }
-			// console.log('LakeStartTile: ' + lakeStartTile);
-			// lakeStartTile.terrainVariable = 'Lake';
-
-
-
-
-			//Castle Initialization
-			// castleStartTile = squareTiles[Math.floor(Math.random()*squareTiles.length)];
-			// while(castleStartTile.column === maxColumnNumber || castleStartTile.column === 0 || castleStartTile.row === maxRowNumber || castleStartTile.row === 0 || castleStartTile.row < 4 || castleStartTile.column < 3 || castleStartTile.row > maxRowNumber-2 || castleStartTile.column > maxColumnNumber-2 || castleStartTile === lakeStartTile || castleStartTile === riverStartTile){
-			// 	castleStartTile = squareTiles[Math.floor(Math.random()*squareTiles.length)]
-			// 	console.log('Re-random CastleStartTile');
-			// }
-			// console.log('CastleStartTile: ' + castleStartTile);
-			// castleStartTile.terrainVariable = 'Castle';
-
-
-
-
-
-
-
-
-
-
-
+			//Add handler for pressing keys
 			$('body').on('keydown',keyPressedHandler);
 
+			//Instantiate objects
 			CivMind = new CivMind();
 			createUnit(squareTiles[20]);
 			createUnit(squareTiles[25]);
@@ -184,15 +109,13 @@
 			CivMind.addWorkerToArray(unitArray[1]);
 			setBuildingSpots();
 
+			//Add handler for checking mouse movement
 			document.addEventListener('mousemove',function(e){
 				mouse.x = e.clientX || e.pageX;
 				mouse.y = e.clientY || e.pageY;
 			}, false);
 
-			if(mouse.x === NaN || mouse.y === NaN){
-				console.log('Mouse not in canvas yet');
-				mouseInCanvas = false;
-			}
+			//Check if mouse is in canvas and track what the mouse is currently hovering over
 			hoverListener = true;
 			$('#canvas1').hover(function(){
 				console.log('MOUSE moved into CANVAS');
@@ -201,10 +124,13 @@
 				console.log('MOUSE moved outof CANVAS');
 				mouseInCanvas = false;
 			});
+
+			//Set initial terrain variables and update the game
 			gridTerrainVariableSet();
 			gameUpdate();
 		});
 
+		//Start interval for updating the game (canvas rendering, unit checking and movement, etc)
 		var pause = false;
 		var frames = 0;
 		setInterval(function(){
@@ -212,6 +138,7 @@
 				gameUpdate();
 				frames = (frames+1) % 10;
 				if(frames === 0){
+					//Second update function for things that don't need to be updated every frame
 					gameUpdateSecond();
 				}
 			}
