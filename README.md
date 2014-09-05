@@ -4,9 +4,8 @@ Collab-Game
 Open index.html to play the game.
 
 
-index.html: Game initialization and rendering.
-
-script.js: Core code for game updating and AI decision making.
+  index.html:   Game initialization and rendering.
+  script.js: Core code for game updating and AI decision making.
 
 classes.js: Class functions for objects.
 
